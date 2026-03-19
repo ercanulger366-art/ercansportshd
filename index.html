@@ -3,530 +3,505 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IPTV Player</title>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+  <title>IPTV İzle</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0a0d12;
-      color: #f1f5f9;
+      background: #0a0a0f;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
-    /* HEADER */
     header {
-      background: #111827;
-      border-bottom: 1px solid #1e2a3a;
-      padding: 14px 24px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 16px 24px;
       display: flex;
       align-items: center;
       gap: 12px;
+      border-bottom: 1px solid #2a2a4a;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.5);
     }
-    .header-icon {
-      background: #dc2626;
+
+    .logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #e50914, #ff6b35);
       border-radius: 8px;
-      width: 36px; height: 36px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .header-icon svg { width: 18px; height: 18px; }
-    header h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
-    header p { font-size: 11px; color: #6b7280; margin-top: 1px; }
-
-    /* LAYOUT */
-    .layout {
       display: flex;
-      flex: 1;
-      max-width: 1280px;
-      width: 100%;
-      margin: 0 auto;
-    }
-
-    /* SIDEBAR */
-    aside {
-      width: 260px;
-      min-width: 260px;
-      background: #111827;
-      border-right: 1px solid #1e2a3a;
-      display: flex;
-      flex-direction: column;
-    }
-    .sidebar-title {
-      padding: 14px 16px;
-      border-bottom: 1px solid #1e2a3a;
-      font-size: 11px;
-      font-weight: 600;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-    .category-label {
-      padding: 8px 16px;
-      background: #0a0d12;
-      border-bottom: 1px solid #1e2a3a;
-      font-size: 10px;
-      font-weight: 500;
-      color: #4b5563;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
-    .channel-btn {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 16px;
-      border: none;
-      border-bottom: 1px solid #1e2a3a;
-      border-left: 4px solid transparent;
-      background: transparent;
-      color: #f1f5f9;
-      cursor: pointer;
-      text-align: left;
-      transition: background 0.15s;
-    }
-    .channel-btn:hover { background: #1e2a3a; }
-    .channel-btn.active {
-      background: rgba(220, 38, 38, 0.15);
-      border-left-color: #dc2626;
-    }
-    .channel-icon {
-      background: #991b1b;
-      border-radius: 6px;
-      width: 32px; height: 32px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .channel-icon svg { width: 15px; height: 15px; }
-    .channel-info { flex: 1; min-width: 0; }
-    .channel-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .channel-cat { font-size: 11px; color: #6b7280; margin-top: 2px; }
-    .live-badge {
-      display: flex; align-items: center; gap: 4px;
-      font-size: 11px; color: #4ade80; white-space: nowrap;
-    }
-    .live-dot {
-      width: 7px; height: 7px;
-      background: #4ade80;
-      border-radius: 50%;
-      animation: pulse 1.5s infinite;
-    }
-
-    /* MAIN */
-    main { flex: 1; display: flex; flex-direction: column; }
-
-    /* VIDEO WRAPPER */
-    .video-wrapper {
-      position: relative;
-      background: #000;
-      aspect-ratio: 16/9;
-      width: 100%;
-    }
-    video { width: 100%; height: 100%; display: block; }
-
-    /* OVERLAY */
-    .overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-    }
-    .overlay-card {
-      background: #1e2a3a;
-      border-radius: 16px;
-      padding: 32px;
-      text-align: center;
-      max-width: 320px;
-    }
-    .overlay-card svg { width: 48px; height: 48px; color: #374151; margin: 0 auto 16px; display: block; }
-    .overlay-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-    .overlay-card p { font-size: 13px; color: #9ca3af; }
-
-    .overlay-dark { background: rgba(0,0,0,0.85); }
-    .overlay-spinner svg { animation: spin 1s linear infinite; color: #dc2626; width: 40px; height: 40px; margin-bottom: 10px; display: block; }
-    .overlay-spinner p { font-size: 13px; color: #d1d5db; }
-    .overlay-spinner small { font-size: 11px; color: #6b7280; margin-top: 4px; display: block; }
-
-    .overlay-error svg { color: #f87171; }
-    .retry-btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      margin-top: 16px;
-      background: #dc2626;
+      font-size: 18px;
+      font-weight: bold;
       color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .retry-btn:hover { background: #b91c1c; }
-    .retry-btn svg { width: 14px; height: 14px; }
-
-    /* VIDEO CONTROLS */
-    .video-controls {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .ctrl-channel {
-      flex: 1;
-      display: flex; align-items: center; gap: 6px;
-      font-size: 12px; color: #d1d5db;
-      min-width: 0;
-    }
-    .ctrl-channel svg { width: 13px; height: 13px; color: #4ade80; flex-shrink: 0; }
-    .ctrl-channel span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .live-tag {
-      display: flex; align-items: center; gap: 4px;
-      font-size: 11px; color: #f87171; font-weight: 600; text-transform: uppercase; margin-left: 8px;
-    }
-    .live-tag-dot { width: 6px; height: 6px; background: #ef4444; border-radius: 50%; animation: pulse 1.5s infinite; }
-    .ctrl-btn {
-      background: rgba(255,255,255,0.1);
-      border: none;
-      border-radius: 6px;
-      color: #fff;
-      padding: 6px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: background 0.15s;
-    }
-    .ctrl-btn:hover { background: rgba(255,255,255,0.2); }
-    .ctrl-btn svg { width: 16px; height: 16px; }
-
-    /* CHANNEL INFO */
-    .channel-info-bar {
-      background: #111827;
-      border-top: 1px solid #1e2a3a;
-      padding: 16px 24px;
-      display: flex; align-items: center; gap: 16px;
-    }
-    .info-icon {
-      background: #991b1b;
-      border-radius: 10px;
-      width: 44px; height: 44px;
-      display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
-    .info-icon svg { width: 22px; height: 22px; }
-    .info-name { font-size: 17px; font-weight: 600; }
-    .info-tags { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
-    .tag {
-      font-size: 11px;
-      background: #1e2a3a;
-      color: #9ca3af;
-      padding: 2px 8px;
-      border-radius: 99px;
-    }
-    .tag-live { color: #4ade80; }
-    .tag-err { color: #f87171; }
-    .tag-load { color: #fbbf24; }
 
-    /* QUICK ACCESS */
-    .quick-access {
-      background: #0a0d12;
-      border-top: 1px solid #1e2a3a;
-      padding: 14px 24px;
-    }
-    .quick-label {
-      font-size: 10px; color: #4b5563; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;
-    }
-    .quick-btns { display: flex; flex-wrap: wrap; gap: 8px; }
-    .quick-btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: none;
-      font-size: 13px; font-weight: 500;
-      cursor: pointer;
-      background: #1e2a3a;
-      color: #d1d5db;
-      transition: background 0.15s;
-    }
-    .quick-btn:hover { background: #2d3a4a; }
-    .quick-btn.active { background: #dc2626; color: #fff; }
-    .quick-btn svg { width: 13px; height: 13px; }
-
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-      .layout { flex-direction: column; }
-      aside { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid #1e2a3a; }
-      .channel-info-bar { padding: 12px 16px; }
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #fff, #aaa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
-    /* ANIMATIONS */
+    .badge {
+      margin-left: auto;
+      background: #e50914;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      animation: pulse 2s infinite;
+    }
+
     @keyframes pulse {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+      50% { opacity: 0.6; }
     }
 
-    .hidden { display: none !important; }
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+      gap: 20px;
+    }
+
+    .player-wrapper {
+      width: 100%;
+      max-width: 960px;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
+      position: relative;
+    }
+
+    .player-wrapper video {
+      width: 100%;
+      display: block;
+      aspect-ratio: 16/9;
+      background: #000;
+    }
+
+    .status-bar {
+      width: 100%;
+      max-width: 960px;
+      background: #111827;
+      border-radius: 10px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid #1e2a3a;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #22c55e;
+      flex-shrink: 0;
+      box-shadow: 0 0 8px #22c55e;
+    }
+
+    .status-dot.error {
+      background: #ef4444;
+      box-shadow: 0 0 8px #ef4444;
+    }
+
+    .status-dot.loading {
+      background: #f59e0b;
+      box-shadow: 0 0 8px #f59e0b;
+      animation: pulse 1s infinite;
+    }
+
+    .status-text {
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+
+    .status-text span {
+      color: #e0e0e0;
+      font-weight: 500;
+    }
+
+    .controls {
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 10px 22px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #e50914, #c0040f);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #ff1a22, #e50914);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(229,9,20,0.4);
+    }
+
+    .btn-secondary {
+      background: #1e2a3a;
+      color: #9ca3af;
+      border: 1px solid #2a3a4a;
+    }
+
+    .btn-secondary:hover {
+      background: #2a3a4a;
+      color: #e0e0e0;
+    }
+
+    .url-box {
+      width: 100%;
+      max-width: 960px;
+      background: #111827;
+      border-radius: 10px;
+      padding: 16px 20px;
+      border: 1px solid #1e2a3a;
+    }
+
+    .url-box label {
+      display: block;
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .url-input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .url-input-row input {
+      flex: 1;
+      background: #0a0a0f;
+      border: 1px solid #2a3a4a;
+      border-radius: 6px;
+      padding: 9px 14px;
+      color: #e0e0e0;
+      font-size: 0.85rem;
+      font-family: monospace;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .url-input-row input:focus {
+      border-color: #e50914;
+    }
+
+    .url-input-row input::placeholder {
+      color: #4b5563;
+    }
+
+    .url-input-row .btn {
+      flex-shrink: 0;
+    }
+
+    .info-grid {
+      width: 100%;
+      max-width: 960px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .info-card {
+      background: #111827;
+      border-radius: 10px;
+      padding: 14px 18px;
+      border: 1px solid #1e2a3a;
+    }
+
+    .info-card .label {
+      font-size: 0.75rem;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .info-card .value {
+      font-size: 0.95rem;
+      color: #e0e0e0;
+      font-weight: 600;
+    }
+
+    .error-msg {
+      width: 100%;
+      max-width: 960px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 10px;
+      padding: 14px 20px;
+      color: #fca5a5;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    footer {
+      text-align: center;
+      padding: 16px;
+      color: #374151;
+      font-size: 0.8rem;
+      border-top: 1px solid #1a1a2e;
+    }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.1rem; }
+      .controls { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+    }
   </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <header>
-  <div class="header-icon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
-  </div>
-  <div>
-    <h1>IPTV Player</h1>
-    <p>Canlı TV İzle</p>
-  </div>
+  <div class="logo">▶</div>
+  <h1>IPTV Canlı Yayın</h1>
+  <div class="badge">● CANLI</div>
 </header>
 
-<div class="layout">
-  <!-- SIDEBAR -->
-  <aside>
-    <div class="sidebar-title">Kanallar</div>
-    <div class="category-label">Spor</div>
+<main>
 
-    <button class="channel-btn" data-id="bein1" onclick="loadChannel('bein1')">
-      <div class="channel-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
-      </div>
-      <div class="channel-info">
-        <div class="channel-name">Bein Sports 1</div>
-        <div class="channel-cat">Spor</div>
-      </div>
-      <div class="live-badge hidden" id="badge-bein1">
-        <span class="live-dot"></span> Canlı
-      </div>
-    </button>
+  <div class="player-wrapper">
+    <video id="videoPlayer" controls autoplay muted playsinline>
+      Tarayıcınız video oynatmayı desteklemiyor.
+    </video>
+  </div>
 
-    <button class="channel-btn" data-id="bein-yedek" onclick="loadChannel('bein-yedek')">
-      <div class="channel-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
-      </div>
-      <div class="channel-info">
-        <div class="channel-name">Bein Sports Yedek</div>
-        <div class="channel-cat">Spor</div>
-      </div>
-      <div class="live-badge hidden" id="badge-bein-yedek">
-        <span class="live-dot"></span> Canlı
-      </div>
-    </button>
-  </aside>
+  <div class="status-bar">
+    <div class="status-dot loading" id="statusDot"></div>
+    <div class="status-text" id="statusText">Yayın yükleniyor... <span id="statusDetail">Bağlanıyor</span></div>
+  </div>
 
-  <!-- MAIN -->
-  <main>
-    <div class="video-wrapper">
-      <video id="video" playsinline autoplay></video>
+  <div class="error-msg" id="errorMsg"></div>
 
-      <!-- IDLE -->
-      <div class="overlay" id="overlay-idle">
-        <div class="overlay-card">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
-          <h3>Kanal Seçin</h3>
-          <p>Sol taraftan bir kanal seçerek izlemeye başlayın.</p>
-        </div>
-      </div>
+  <div class="controls">
+    <button class="btn btn-primary" onclick="loadStream()">▶ Yayını Başlat</button>
+    <button class="btn btn-secondary" onclick="toggleMute()">🔊 <span id="muteLabel">Sesi Aç</span></button>
+    <button class="btn btn-secondary" onclick="toggleFullscreen()">⛶ Tam Ekran</button>
+    <button class="btn btn-secondary" onclick="reloadStream()">↺ Yeniden Yükle</button>
+  </div>
 
-      <!-- LOADING -->
-      <div class="overlay overlay-dark hidden" id="overlay-loading">
-        <div class="overlay-spinner">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-          <p>Yayın yükleniyor...</p>
-          <small id="loading-channel-name"></small>
-        </div>
-      </div>
-
-      <!-- ERROR -->
-      <div class="overlay overlay-dark hidden" id="overlay-error">
-        <div class="overlay-card">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:#f87171"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
-          <h3>Bağlantı Hatası</h3>
-          <p id="error-msg" style="font-size:13px;color:#9ca3af;margin-top:4px;">Yayın bağlantısı kurulamadı.</p>
-          <button class="retry-btn" onclick="retryChannel()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.46"/></svg>
-            Tekrar Dene
-          </button>
-        </div>
-      </div>
-
-      <!-- VIDEO CONTROLS (shown when playing/loading) -->
-      <div class="video-controls hidden" id="video-controls">
-        <div class="ctrl-channel">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg>
-          <span id="ctrl-name">—</span>
-          <div class="live-tag" id="ctrl-live-tag">
-            <span class="live-tag-dot"></span> Canlı
-          </div>
-        </div>
-        <button class="ctrl-btn" id="mute-btn" onclick="toggleMute()" title="Sesi Kapat">
-          <!-- Volume icon -->
-          <svg id="icon-volume" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-          <!-- Mute icon -->
-          <svg id="icon-mute" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-        </button>
-        <button class="ctrl-btn" onclick="toggleFullscreen()" title="Tam Ekran">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
-        </button>
-      </div>
+  <div class="url-box">
+    <label>Yayın URL'si (Değiştirilebilir)</label>
+    <div class="url-input-row">
+      <input type="text" id="streamUrlInput" value="http://edgedl.me.gvt1.com/edgedl/diffgen-puffin/jflookgnkcckhobaglndicnbbgbonegd/ac83a0cacf04394ae254e3785259fd7a4c5dcbb00b71d2f3f3d9e88597a28951" placeholder="http://... yayın URL'sini girin" />
+      <button class="btn btn-primary" onclick="loadCustomStream()">Yükle</button>
     </div>
+  </div>
 
-    <!-- CHANNEL INFO BAR -->
-    <div class="channel-info-bar" id="info-bar" style="display:none;">
-      <div class="info-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
-      </div>
-      <div>
-        <div class="info-name" id="info-name">—</div>
-        <div class="info-tags">
-          <span class="tag">Spor</span>
-          <span class="tag tag-live hidden" id="info-live">● HD Canlı Yayın</span>
-          <span class="tag tag-err hidden" id="info-err">Bağlantı Hatası</span>
-          <span class="tag tag-load hidden" id="info-load">Yükleniyor...</span>
-        </div>
-      </div>
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="label">Durum</div>
+      <div class="value" id="infoStatus">Yükleniyor</div>
     </div>
+    <div class="info-card">
+      <div class="label">Video Boyutu</div>
+      <div class="value" id="infoResolution">-</div>
+    </div>
+    <div class="info-card">
+      <div class="label">Süre</div>
+      <div class="value" id="infoDuration">Canlı</div>
+    </div>
+    <div class="info-card">
+      <div class="label">Protokol</div>
+      <div class="value" id="infoProtocol">-</div>
+    </div>
+  </div>
 
-    <!-- QUICK ACCESS -->
-    <div class="quick-access">
-      <div class="quick-label">Hızlı Erişim</div>
-      <div class="quick-btns">
-        <button class="quick-btn" data-id="bein1" onclick="loadChannel('bein1')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Bein Sports 1
-        </button>
-        <button class="quick-btn" data-id="bein-yedek" onclick="loadChannel('bein-yedek')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Bein Sports Yedek
-        </button>
-      </div>
-    </div>
-  </main>
-</div>
+</main>
+
+<footer>
+  IPTV İzleme Sitesi &mdash; Yayın kalitesi bağlantınıza bağlıdır.
+</footer>
 
 <script>
-  const channels = {
-    'bein1': {
-      name: 'Bein Sports 1',
-      url: 'http://151.115.81.178:8080/live/ercan6749/19032027asd/231515.m3u8?token=HxcMVENdFggaAVdTUgEJAApUUAFSAgQAXQJUVFUAWgxQUwIGBAIEBFoWH0EXF0sEWF1rW1IVDwZXAVNVBU0bQBdQFmpZURYIGgEHUVxRAEMVEkBbW1IXDlQcRBRZBRsPRgRWDAUCFh4aUUsXARFXAFVvUFdAXlZRRgoIEVwNFRcLWztRVVhVXFwWCUFUQRVDUENEEAwVYUEWWygBREFwWQFBDUZZWBR6UU5eBhAPXBNQEhgQVF5BRgVEA0YKQw0MVgBGGRJWW0dWQEEaRllXFFVcGBBTT0FRCkMPC15DAxcJBhENEhkWW0trQQYXF0sEWF1RQBQNFwRGHEQJURlmVgtbClBTQV1dVkcRWUZSG00bXVtcX0NaRjtADwASWxsEVgJWBxJI'
-    },
-    'bein-yedek': {
-      name: 'Bein Sports Yedek',
-      url: 'http://151.115.81.69:8080/live/ercan6749/19032027asd/249624.m3u8?token=HxcMVENdFggaUVdTAlZbAAkAUlRUBgwHVwBSXAkFD1YBAFYMBAMACwwWH0EXF0sEWF1rW1IVDwZQCVBWBE0bQBdQFmpZURYIGgEHUVxRAEMVEkBbW1IXDlQcRBRZBRsPRgRUAwUEARAUFlYbEAZLD1hca1ZTQVxXARJcCkUNVRlGWgpqVFBZU1ZQEVlGUxtNG1lHQhQNF2ARQg0qVRUZfAhQEFxDXFkScF1JDgEXVQRLWRYeFFVcQBZREgESWxsEVgNVFxwXV11NWkcRHUEDD0xcWB4UUk1AAV4VDV8PGw9GWFdACBcYEFFHbBEBEE0TXFFZV0QVDxZUEkpGXQBBagdaCltVVkBbV1pAQV5BCEMVElldWF5BWxZvFg1UQwMXVQdcDAcXSQ=='
-    }
-  };
+  const DEFAULT_URL = "http://edgedl.me.gvt1.com/edgedl/diffgen-puffin/jflookgnkcckhobaglndicnbbgbonegd/ac83a0cacf04394ae254e3785259fd7a4c5dcbb00b71d2f3f3d9e88597a28951";
 
-  let currentId = null;
-  let hls = null;
-  let isMuted = false;
+  const video = document.getElementById('videoPlayer');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const statusDetail = document.getElementById('statusDetail');
+  const errorMsg = document.getElementById('errorMsg');
+  const infoStatus = document.getElementById('infoStatus');
+  const infoResolution = document.getElementById('infoResolution');
+  const infoDuration = document.getElementById('infoDuration');
+  const infoProtocol = document.getElementById('infoProtocol');
 
-  function setStatus(s) {
-    // overlays
-    document.getElementById('overlay-idle').classList.toggle('hidden', s !== 'idle');
-    document.getElementById('overlay-loading').classList.toggle('hidden', s !== 'loading');
-    document.getElementById('overlay-error').classList.toggle('hidden', s !== 'error');
-    document.getElementById('video-controls').classList.toggle('hidden', s === 'idle');
+  let hlsInstance = null;
+  let currentUrl = DEFAULT_URL;
 
-    // ctrl live tag
-    document.getElementById('ctrl-live-tag').classList.toggle('hidden', s !== 'playing');
-
-    // info bar
-    const infoBar = document.getElementById('info-bar');
-    infoBar.style.display = currentId ? 'flex' : 'none';
-
-    document.getElementById('info-live').classList.toggle('hidden', s !== 'playing');
-    document.getElementById('info-err').classList.toggle('hidden', s !== 'error');
-    document.getElementById('info-load').classList.toggle('hidden', s !== 'loading');
-
-    // sidebar badges
-    Object.keys(channels).forEach(id => {
-      document.getElementById('badge-' + id).classList.toggle('hidden', !(id === currentId && s === 'playing'));
-    });
-
-    // sidebar active
-    document.querySelectorAll('.channel-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.id === currentId);
-    });
-
-    // quick btn active
-    document.querySelectorAll('.quick-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.id === currentId);
-    });
+  function detectProtocol(url) {
+    if (url.includes('.m3u8')) return 'HLS (m3u8)';
+    if (url.includes('.mpd')) return 'DASH (mpd)';
+    if (url.includes('.ts')) return 'MPEG-TS';
+    if (url.includes('rtmp://')) return 'RTMP';
+    return 'HTTP Stream';
   }
 
-  function loadChannel(id) {
-    currentId = id;
-    const ch = channels[id];
+  function setStatus(type, main, detail) {
+    statusDot.className = 'status-dot ' + type;
+    statusText.innerHTML = main + ' <span id="statusDetail">' + detail + '</span>';
+    infoStatus.textContent = detail;
+  }
 
-    document.getElementById('ctrl-name').textContent = ch.name;
-    document.getElementById('info-name').textContent = ch.name;
-    document.getElementById('loading-channel-name').textContent = ch.name;
+  function showError(msg) {
+    errorMsg.style.display = 'block';
+    errorMsg.textContent = '⚠ Hata: ' + msg;
+    setStatus('error', 'Yayın yüklenemedi.', 'Hata');
+  }
 
-    setStatus('loading');
+  function hideError() {
+    errorMsg.style.display = 'none';
+  }
 
-    if (hls) { hls.destroy(); hls = null; }
+  function loadStream(url) {
+    url = url || currentUrl;
+    currentUrl = url;
+    hideError();
+    setStatus('loading', 'Yayın yükleniyor...', 'Bağlanıyor');
 
-    const video = document.getElementById('video');
-    video.removeAttribute('src');
-    video.load();
+    infoProtocol.textContent = detectProtocol(url);
 
-    if (Hls.isSupported()) {
-      hls = new Hls({ enableWorker: true, lowLatencyMode: true });
-      hls.loadSource(ch.url);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.muted = isMuted;
-        video.play().catch(() => {});
-        setStatus('playing');
+    if (hlsInstance) {
+      hlsInstance.destroy();
+      hlsInstance = null;
+    }
+
+    const isHLS = url.includes('.m3u8');
+
+    if (isHLS && typeof Hls !== 'undefined' && Hls.isSupported()) {
+      hlsInstance = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
       });
-      hls.on(Hls.Events.ERROR, (e, data) => {
+      hlsInstance.loadSource(url);
+      hlsInstance.attachMedia(video);
+      hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
+        video.play().catch(() => {});
+      });
+      hlsInstance.on(Hls.Events.ERROR, function (event, data) {
         if (data.fatal) {
-          document.getElementById('error-msg').textContent = 'Yayın bağlantısı kurulamadı. Lütfen tekrar deneyin.';
-          setStatus('error');
+          showError('HLS yayını yüklenemedi: ' + (data.details || 'Bilinmeyen hata'));
         }
       });
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = ch.url;
-      video.onloadedmetadata = () => { video.play().catch(() => {}); setStatus('playing'); };
-      video.onerror = () => { document.getElementById('error-msg').textContent = 'Video oynatılamadı.'; setStatus('error'); };
+    } else if (isHLS && video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = url;
+      video.play().catch(() => {});
     } else {
-      document.getElementById('error-msg').textContent = 'Bu tarayıcı HLS akışını desteklemiyor.';
-      setStatus('error');
+      video.src = url;
+      video.play().catch(() => {});
     }
   }
 
-  function retryChannel() {
-    if (currentId) loadChannel(currentId);
+  function loadCustomStream() {
+    const input = document.getElementById('streamUrlInput');
+    const url = input.value.trim();
+    if (!url) { showError('Lütfen bir URL girin.'); return; }
+    loadStream(url);
+  }
+
+  function reloadStream() {
+    loadStream(currentUrl);
   }
 
   function toggleMute() {
-    isMuted = !isMuted;
-    const video = document.getElementById('video');
-    video.muted = isMuted;
-    document.getElementById('icon-volume').classList.toggle('hidden', isMuted);
-    document.getElementById('icon-mute').classList.toggle('hidden', !isMuted);
+    video.muted = !video.muted;
+    document.getElementById('muteLabel').textContent = video.muted ? 'Sesi Aç' : 'Sesi Kapat';
   }
 
   function toggleFullscreen() {
-    const video = document.getElementById('video');
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
+    if (!document.fullscreenElement) {
+      video.requestFullscreen().catch(() => {});
     } else {
-      video.requestFullscreen().catch(() => {
-        document.querySelector('.video-wrapper').requestFullscreen().catch(() => {});
-      });
+      document.exitFullscreen();
     }
   }
+
+  video.addEventListener('loadedmetadata', function () {
+    infoResolution.textContent = video.videoWidth + 'x' + video.videoHeight;
+    const dur = video.duration;
+    infoDuration.textContent = isFinite(dur) ? formatTime(dur) : 'Canlı';
+  });
+
+  video.addEventListener('playing', function () {
+    setStatus('', 'Yayın oynatılıyor', 'Aktif');
+    statusDot.className = 'status-dot';
+    statusDot.style.background = '#22c55e';
+    statusDot.style.boxShadow = '0 0 8px #22c55e';
+  });
+
+  video.addEventListener('waiting', function () {
+    setStatus('loading', 'Yükleniyor...', 'Tamponlanıyor');
+  });
+
+  video.addEventListener('error', function () {
+    const err = video.error;
+    let msg = 'Video oynatılamadı.';
+    if (err) {
+      switch (err.code) {
+        case 1: msg = 'Video yükleme iptal edildi.'; break;
+        case 2: msg = 'Ağ hatası: Sunucuya bağlanılamadı.'; break;
+        case 3: msg = 'Codec veya format desteklenmiyor.'; break;
+        case 4: msg = 'Video kaynağı bulunamadı veya desteklenmiyor.'; break;
+      }
+    }
+    showError(msg);
+  });
+
+  function formatTime(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    return [h, m, s].map(v => String(v).padStart(2, '0')).join(':');
+  }
+
+  function loadHlsScript(callback) {
+    if (typeof Hls !== 'undefined') { callback(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js';
+    s.onload = callback;
+    s.onerror = callback;
+    document.head.appendChild(s);
+  }
+
+  loadHlsScript(function () {
+    loadStream(DEFAULT_URL);
+  });
 </script>
+
 </body>
 </html>
